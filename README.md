@@ -1,6 +1,6 @@
 # 9M2PJU T-Display S3 DX Cluster
 
-ESP32-S3 firmware for a LilyGO T-Display S3 that connects to the 9M2PJU DX cluster by telnet and shows live DX spots on the built-in display.
+ESP32-S3 firmware for the LilyGO T-Display-S3 development board with the 1.9 inch ST7789 LCD. It connects to the 9M2PJU DX cluster by telnet and shows live DX spots on the built-in display.
 
 The display keeps DX spot information as the main focus, with a fixed UTC clock at the top right and subtle animation for connection activity and new spots.
 
@@ -43,8 +43,11 @@ That is the intended user flow: clone, open in VS Code, edit config, build, uplo
 
 ## Hardware
 
-- LilyGO T-Display S3, ESP32-S3 based
-- Built-in ST7789 TFT display, normally 320 x 170 in landscape
+- LilyGO T-Display-S3 development board
+- ESP32-S3 Wi-Fi and Bluetooth 5.0 module
+- Built-in 1.9 inch ST7789 LCD
+- 8-bit parallel LCD bus
+- 320 x 170 usable landscape layout
 - USB-C cable for flashing and serial monitor
 - Wi-Fi network with internet access
 
@@ -175,5 +178,6 @@ The newest spots are highlighted briefly. Band color accents make the spot list 
 
 - Keep the clock in UTC for radio logging consistency.
 - Keep real Wi-Fi passwords out of `include/config.example.h`.
-- If your T-Display S3 board revision uses different display pins, adjust the pin constants near the top of `src/main.cpp`.
+- This project is configured for the T-Display-S3 1.9 inch ST7789 board using LilyGO's 8-bit parallel LCD pinout.
+- If your board revision uses different display pins, adjust the pin constants near the top of `src/main.cpp`.
 - The first build may take a while because PlatformIO downloads the ESP32 platform and display library.

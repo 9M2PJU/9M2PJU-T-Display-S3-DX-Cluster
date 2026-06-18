@@ -15,26 +15,50 @@
 #define DX_CLUSTER_POST_LOGIN_COMMAND ""
 #endif
 
-// LilyGO T-Display S3 ST7789 wiring.
-// If your board revision differs, keep the rest of the app and adjust only these pins.
-constexpr int LCD_SCLK = 12;
-constexpr int LCD_MOSI = 11;
-constexpr int LCD_DC = 13;
-constexpr int LCD_RST = 9;
-constexpr int LCD_CS = 10;
+// LilyGO T-Display-S3 1.9-inch ST7789 wiring, 8-bit parallel bus.
+// Matches LilyGO's official T-Display-S3 TFT_eSPI setup.
+constexpr int LCD_CS = 6;
+constexpr int LCD_DC = 7;
+constexpr int LCD_RST = 5;
+constexpr int LCD_WR = 8;
+constexpr int LCD_RD = 9;
+constexpr int LCD_D0 = 39;
+constexpr int LCD_D1 = 40;
+constexpr int LCD_D2 = 41;
+constexpr int LCD_D3 = 42;
+constexpr int LCD_D4 = 45;
+constexpr int LCD_D5 = 46;
+constexpr int LCD_D6 = 47;
+constexpr int LCD_D7 = 48;
 constexpr int LCD_BL = 38;
 
-Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCLK, LCD_MOSI, GFX_NOT_DEFINED);
+constexpr int LCD_PANEL_WIDTH = 170;
+constexpr int LCD_PANEL_HEIGHT = 320;
+
+Arduino_DataBus *bus = new Arduino_ESP32PAR8(
+    LCD_DC,
+    LCD_CS,
+    LCD_WR,
+    LCD_RD,
+    LCD_D0,
+    LCD_D1,
+    LCD_D2,
+    LCD_D3,
+    LCD_D4,
+    LCD_D5,
+    LCD_D6,
+    LCD_D7);
+
 Arduino_GFX *gfx = new Arduino_ST7789(
     bus,
     LCD_RST,
     DISPLAY_ROTATION,
     true,
-    DISPLAY_WIDTH,
-    DISPLAY_HEIGHT,
-    35,
+    LCD_PANEL_WIDTH,
+    LCD_PANEL_HEIGHT,
     0,
-    35,
+    0,
+    0,
     0);
 
 WiFiClient clusterClient;
