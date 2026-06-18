@@ -179,5 +179,6 @@ The newest spots are highlighted briefly. Band color accents make the spot list 
 - Keep the clock in UTC for radio logging consistency.
 - Keep real Wi-Fi passwords out of `include/config.example.h`.
 - This project is configured for the T-Display-S3 1.9 inch ST7789 board using LilyGO's 8-bit parallel LCD pinout.
-- If your board revision uses different display pins, adjust the pin constants near the top of `src/main.cpp`.
+- LCD pin settings are passed to `TFT_eSPI` from `platformio.ini`.
+- If your board revision uses different display pins, adjust the `TFT_*` build flags in `platformio.ini`.
 - The first build may take a while because PlatformIO downloads the ESP32 platform and display library.

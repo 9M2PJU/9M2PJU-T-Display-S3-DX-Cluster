@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Arduino_GFX_Library.h>
+#include <TFT_eSPI.h>
 #include <WiFi.h>
 #include <cctype>
 #include <cstring>
@@ -15,51 +15,11 @@
 #define DX_CLUSTER_POST_LOGIN_COMMAND ""
 #endif
 
-// LilyGO T-Display-S3 1.9-inch ST7789 wiring, 8-bit parallel bus.
-// Matches LilyGO's official T-Display-S3 TFT_eSPI setup.
-constexpr int LCD_CS = 6;
-constexpr int LCD_DC = 7;
-constexpr int LCD_RST = 5;
-constexpr int LCD_WR = 8;
-constexpr int LCD_RD = 9;
-constexpr int LCD_D0 = 39;
-constexpr int LCD_D1 = 40;
-constexpr int LCD_D2 = 41;
-constexpr int LCD_D3 = 42;
-constexpr int LCD_D4 = 45;
-constexpr int LCD_D5 = 46;
-constexpr int LCD_D6 = 47;
-constexpr int LCD_D7 = 48;
+// LilyGO T-Display-S3 1.9-inch ST7789 backlight pin.
+// LCD parallel bus pins are configured in platformio.ini using LilyGO's official setup.
 constexpr int LCD_BL = 38;
 
-constexpr int LCD_PANEL_WIDTH = 170;
-constexpr int LCD_PANEL_HEIGHT = 320;
-
-Arduino_DataBus *bus = new Arduino_ESP32PAR8(
-    LCD_DC,
-    LCD_CS,
-    LCD_WR,
-    LCD_RD,
-    LCD_D0,
-    LCD_D1,
-    LCD_D2,
-    LCD_D3,
-    LCD_D4,
-    LCD_D5,
-    LCD_D6,
-    LCD_D7);
-
-Arduino_GFX *gfx = new Arduino_ST7789(
-    bus,
-    LCD_RST,
-    DISPLAY_ROTATION,
-    true,
-    LCD_PANEL_WIDTH,
-    LCD_PANEL_HEIGHT,
-    0,
-    0,
-    0,
-    0);
+TFT_eSPI tft;
 
 WiFiClient clusterClient;
 
@@ -281,63 +241,63 @@ void updateClockText() {
 }
 
 void drawHeader(uint32_t now) {
-  gfx->fillRect(0, 0, DISPLAY_WIDTH, 28, COLOR_BACKGROUND);
-  gfx->drawFastHLine(0, 27, DISPLAY_WIDTH, COLOR_GRID);
+  tft.fillRect(0, 0, DISPLAY_WIDTH, 28, COLOR_BACKGROUND);
+  tft.drawFastHLine(0, 27, DISPLAY_WIDTH, COLOR_GRID);
 
   int sweep = (now / 18) % DISPLAY_WIDTH;
   int sweepStart = sweep > 28 ? sweep - 28 : 0;
   int sweepWidth = sweep > 28 ? 28 : sweep;
   if (sweepWidth > 0) {
-    gfx->drawFastHLine(sweepStart, 26, sweepWidth, COLOR_ACCENT);
+    tft.drawFastHLine(sweepStart, 26, sweepWidth, COLOR_ACCENT);
   }
 
-  gfx->setTextSize(1);
-  gfx->setTextColor(COLOR_TEXT_SECONDARY);
-  gfx->setCursor(8, 6);
-  gfx->print("9M2PJU DX Cluster");
+  tft.setTextSize(1);
+  tft.setTextColor(COLOR_TEXT_SECONDARY);
+  tft.setCursor(8, 6);
+  tft.print("9M2PJU DX Cluster");
 
   uint16_t statusColor = clusterClient.connected() ? COLOR_ACCENT : COLOR_ALERT;
   int pulse = clusterClient.connected() ? 2 + ((now / 300) % 3) : 2;
-  gfx->fillCircle(118, 10, pulse, statusColor);
+  tft.fillCircle(118, 10, pulse, statusColor);
 
-  gfx->setTextColor(COLOR_TEXT_PRIMARY);
-  gfx->setCursor(DISPLAY_WIDTH - 47, 6);
-  gfx->print(utcClock);
+  tft.setTextColor(COLOR_TEXT_PRIMARY);
+  tft.setCursor(DISPLAY_WIDTH - 47, 6);
+  tft.print(utcClock);
 }
 
 void drawSpot(const DxSpot &spot, int y, bool fresh) {
   uint16_t accent = bandColor(spot.frequency);
-  gfx->fillRect(0, y, DISPLAY_WIDTH, 33, fresh ? COLOR_PANEL : COLOR_BACKGROUND);
-  gfx->fillRect(4, y + 3, 3, 26, accent);
+  tft.fillRect(0, y, DISPLAY_WIDTH, 33, fresh ? COLOR_PANEL : COLOR_BACKGROUND);
+  tft.fillRect(4, y + 3, 3, 26, accent);
 
-  gfx->setTextSize(1);
-  gfx->setTextColor(COLOR_TEXT_PRIMARY);
-  gfx->setCursor(12, y + 4);
-  gfx->print(spot.frequency);
+  tft.setTextSize(1);
+  tft.setTextColor(COLOR_TEXT_PRIMARY);
+  tft.setCursor(12, y + 4);
+  tft.print(spot.frequency);
 
-  gfx->setTextColor(accent);
-  gfx->setCursor(82, y + 4);
-  gfx->print(spot.dxCall);
+  tft.setTextColor(accent);
+  tft.setCursor(82, y + 4);
+  tft.print(spot.dxCall);
 
-  gfx->setTextColor(COLOR_TEXT_SECONDARY);
-  gfx->setCursor(12, y + 17);
-  gfx->print("de ");
-  gfx->print(spot.spotter);
+  tft.setTextColor(COLOR_TEXT_SECONDARY);
+  tft.setCursor(12, y + 17);
+  tft.print("de ");
+  tft.print(spot.spotter);
 
   String comment = spot.comment;
   if (comment.length() > 26) {
     comment = comment.substring(0, 25) + ".";
   }
 
-  gfx->setCursor(132, y + 17);
-  gfx->print(comment);
+  tft.setCursor(132, y + 17);
+  tft.print(comment);
 }
 
 void drawEmptyState() {
-  gfx->setTextSize(1);
-  gfx->setTextColor(COLOR_TEXT_SECONDARY);
-  gfx->setCursor(26, 72);
-  gfx->print(clusterClient.connected() ? "Waiting for DX spots..." : "Connecting to DX cluster...");
+  tft.setTextSize(1);
+  tft.setTextColor(COLOR_TEXT_SECONDARY);
+  tft.setCursor(26, 72);
+  tft.print(clusterClient.connected() ? "Waiting for DX spots..." : "Connecting to DX cluster...");
 }
 
 void drawScreen() {
@@ -347,7 +307,7 @@ void drawScreen() {
   }
 
   lastFrameMs = now;
-  gfx->fillScreen(COLOR_BACKGROUND);
+  tft.fillScreen(COLOR_BACKGROUND);
   drawHeader(now);
 
   if (spotCount == 0) {
@@ -367,15 +327,16 @@ void drawScreen() {
 
 void setupDisplay() {
   pinMode(LCD_BL, OUTPUT);
-  analogWrite(LCD_BL, DISPLAY_BACKLIGHT_BRIGHTNESS);
+  digitalWrite(LCD_BL, DISPLAY_BACKLIGHT_BRIGHTNESS > 0 ? HIGH : LOW);
 
-  gfx->begin();
-  gfx->fillScreen(COLOR_BACKGROUND);
-  gfx->setTextWrap(false);
-  gfx->setTextSize(1);
-  gfx->setTextColor(COLOR_TEXT_PRIMARY);
-  gfx->setCursor(20, 70);
-  gfx->print("9M2PJU DX Cluster");
+  tft.init();
+  tft.setRotation(DISPLAY_ROTATION);
+  tft.fillScreen(COLOR_BACKGROUND);
+  tft.setTextWrap(false);
+  tft.setTextSize(1);
+  tft.setTextColor(COLOR_TEXT_PRIMARY);
+  tft.setCursor(20, 70);
+  tft.print("9M2PJU DX Cluster");
 }
 
 void setup() {
