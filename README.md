@@ -1,76 +1,63 @@
 # 9M2PJU T-Display S3 DX Cluster
 
-Firmware project for a LilyGO T-Display S3 / ESP32-S3 DX cluster display.
+ESP32-S3 firmware for a LilyGO T-Display S3 that connects to the 9M2PJU DX cluster by telnet and shows live DX spots on the built-in display.
 
-The goal is to connect the ESP32-S3 to the 9M2PJU DX cluster over telnet, log in with an amateur radio callsign, and show live DX spots on the built-in display. The main screen is intended to focus on DX spot information, with a fixed UTC clock at the top right and subtle animation for connection activity and new spots.
+The display keeps DX spot information as the main focus, with a fixed UTC clock at the top right and subtle animation for connection activity and new spots.
 
-## Target Hardware
+## Quick Start
+
+1. Clone the repository:
+
+```sh
+git clone https://github.com/9M2PJU/9M2PJU-T-Display-S3-DX-Cluster.git
+cd 9M2PJU-T-Display-S3-DX-Cluster
+```
+
+2. Open the folder in Visual Studio Code.
+
+3. Install the recommended **PlatformIO IDE** extension when VS Code asks.
+
+4. Create your private config:
+
+```sh
+cp include/config.example.h include/config.h
+```
+
+5. Edit `include/config.h`:
+
+```cpp
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define DX_CLUSTER_LOGIN_CALLSIGN "9M2PJU"
+```
+
+6. Connect the T-Display S3 by USB-C.
+
+7. In VS Code, open the PlatformIO sidebar and choose:
+
+- **Build**
+- **Upload**
+- **Monitor**
+
+That is the intended user flow: clone, open in VS Code, edit config, build, upload.
+
+## Hardware
 
 - LilyGO T-Display S3, ESP32-S3 based
-- Built-in landscape TFT display, normally 320 x 170
+- Built-in ST7789 TFT display, normally 320 x 170 in landscape
 - USB-C cable for flashing and serial monitor
 - Wi-Fi network with internet access
 
 ## DX Cluster
 
-Default cluster settings are prepared in the config template:
+Default cluster settings:
 
 - Host: `9m2pju.hamradio.my`
 - Port: `7300`
 - Protocol: telnet
 - Login: amateur radio callsign
 
-## Repository Status
-
-This repository currently contains the project configuration template. The firmware source will be added next.
-
-Current files:
-
-- `include/config.example.h`: safe example config for Wi-Fi, cluster login, display layout, UTC clock, and UI settings
-- `.gitignore`: keeps private credentials and build output out of git
-
-Planned firmware files:
-
-- `platformio.ini`
-- `src/main.cpp`
-- display renderer
-- telnet client
-- DX spot parser
-- UTC/NTP clock handling
-
-## Configuration
-
-Create your private config file from the example:
-
-```sh
-cp include/config.example.h include/config.h
-```
-
-Edit `include/config.h` and set your Wi-Fi credentials:
-
-```cpp
-#define WIFI_SSID "YOUR_WIFI_SSID"
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
-```
-
-Set the callsign used to log in to the DX cluster:
-
-```cpp
-#define DX_CLUSTER_LOGIN_CALLSIGN "9M2PJU"
-```
-
-The private file `include/config.h` is ignored by git, so your Wi-Fi password should not be committed.
-
-## Important Config Values
-
-Wi-Fi:
-
-```cpp
-#define WIFI_SSID "YOUR_WIFI_SSID"
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
-```
-
-DX cluster:
+These values are in `include/config.example.h`:
 
 ```cpp
 #define DX_CLUSTER_HOST "9m2pju.hamradio.my"
@@ -78,102 +65,115 @@ DX cluster:
 #define DX_CLUSTER_LOGIN_CALLSIGN "9M2PJU"
 ```
 
-UTC clock:
+## Configuration
+
+Do not edit `include/config.example.h` for your private setup. Copy it first:
+
+```sh
+cp include/config.example.h include/config.h
+```
+
+Then edit `include/config.h`.
+
+Important values:
 
 ```cpp
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+
+#define DX_CLUSTER_HOST "9m2pju.hamradio.my"
+#define DX_CLUSTER_PORT 7300
+#define DX_CLUSTER_LOGIN_CALLSIGN "9M2PJU"
+
 #define NTP_SERVER_PRIMARY "pool.ntp.org"
 #define NTP_SERVER_SECONDARY "time.google.com"
-#define CLOCK_TIMEZONE_OFFSET_SECONDS 0
-#define CLOCK_DAYLIGHT_OFFSET_SECONDS 0
 ```
 
-Display:
+`include/config.h` is ignored by git so Wi-Fi credentials are not committed.
 
-```cpp
-#define DISPLAY_WIDTH 320
-#define DISPLAY_HEIGHT 170
-#define DISPLAY_ROTATION 1
-#define DISPLAY_BACKLIGHT_BRIGHTNESS 220
-```
+## Build And Upload From VS Code
 
-## Intended Display Layout
+Install:
 
-The screen should prioritize DX spots, with a compact status bar above them:
+- [Visual Studio Code](https://code.visualstudio.com/)
+- PlatformIO IDE extension for VS Code
 
-```text
-+------------------------------+
-| 9M2PJU DX Cluster     12:34Z |
-+------------------------------+
-| 14.074  JA1ABC  FT8          |
-| by 9M2XYZ  3 min ago         |
-|                              |
-| 21.300  VK2DEF  SSB          |
-| CQ DX, strong signal         |
-|                              |
-|  7.025  DL1AAA  CW           |
-| Europe opening               |
-+------------------------------+
-```
+Open this project folder in VS Code. PlatformIO will read `platformio.ini` automatically.
 
-The UTC clock should stay fixed at the top right. Animation should support the display, not compete with the DX data.
+Use the PlatformIO sidebar:
 
-Good animation ideas:
+- **Project Tasks > t-display-s3 > General > Build**
+- **Project Tasks > t-display-s3 > General > Upload**
+- **Project Tasks > t-display-s3 > Platform > Monitor**
 
-- subtle signal sweep in the header
-- small connection pulse while telnet is active
-- slide or fade for a new DX spot
-- short highlight on newly received spots
-- band color accents for quick scanning
+If upload fails because the board is not detected, hold the BOOT button while plugging in USB-C, then upload again.
 
-## Build And Upload
+## Build And Upload From Terminal
 
-The firmware is intended to use PlatformIO with the Arduino framework.
-
-After `platformio.ini` and `src/main.cpp` are added, install PlatformIO and run:
+Build:
 
 ```sh
 pio run
 ```
 
-Upload to the T-Display S3:
+Upload:
 
 ```sh
 pio run --target upload
 ```
 
-Open the serial monitor:
+Serial monitor:
 
 ```sh
 pio device monitor
 ```
 
-If the board is not detected, hold the BOOT button while plugging in USB-C, then try the upload again.
+## What The Firmware Does
 
-## Expected Runtime Flow
+On boot, the device:
 
-1. Boot the ESP32-S3.
-2. Connect to Wi-Fi.
-3. Sync UTC time from NTP.
-4. Open telnet connection to `9m2pju.hamradio.my:7300`.
-5. Send the configured callsign when the cluster asks for login.
-6. Read incoming cluster lines.
-7. Parse DX spot data.
-8. Keep the newest spots on screen.
-9. Reconnect automatically if Wi-Fi or telnet drops.
+1. Starts the display.
+2. Connects to Wi-Fi.
+3. Syncs UTC time from NTP.
+4. Opens telnet to `9m2pju.hamradio.my:7300`.
+5. Sends the configured callsign when the cluster asks for login.
+6. Reads incoming cluster lines.
+7. Parses common `DX de ...` spot lines.
+8. Shows newest DX spots on screen.
+9. Reconnects automatically if the telnet connection drops.
 
-## Safety Notes
+## Display Layout
 
-- Do not commit `include/config.h`.
-- Do not put real Wi-Fi passwords into `include/config.example.h`.
-- Use UTC for the display clock, not local time, so radio logs and DX spots stay consistent.
+The top bar shows the project name, connection pulse, and fixed UTC clock:
 
-## Development Notes
+```text
++------------------------------+
+| 9M2PJU DX Cluster     12:34Z |
++------------------------------+
+| 14.074  JA1ABC               |
+| de 9M2XYZ  FT8, CQ DX        |
+|                              |
+| 21.300  VK2DEF               |
+| de 9M2ABC  strong signal     |
+|                              |
+|  7.025  DL1AAA               |
+| de 9M2PJU  Europe opening    |
++------------------------------+
+```
 
-Recommended implementation approach:
+The newest spots are highlighted briefly. Band color accents make the spot list easier to scan.
 
-- Use non-blocking Wi-Fi and telnet handling.
-- Keep display rendering separate from telnet parsing.
-- Store recent DX spots in a small fixed-size ring buffer.
-- Redraw the clock once per second.
-- Run animation at about 30 FPS, using `ANIMATION_FRAME_MS`.
-- Avoid blocking `delay()` calls in the main loop except very short timing yields.
+## Files
+
+- `platformio.ini`: PlatformIO project setup
+- `src/main.cpp`: firmware source
+- `include/config.example.h`: safe config template
+- `include/config.h`: private user config, created locally and ignored by git
+- `.vscode/extensions.json`: recommends the PlatformIO VS Code extension
+
+## Notes
+
+- Keep the clock in UTC for radio logging consistency.
+- Keep real Wi-Fi passwords out of `include/config.example.h`.
+- If your T-Display S3 board revision uses different display pins, adjust the pin constants near the top of `src/main.cpp`.
+- The first build may take a while because PlatformIO downloads the ESP32 platform and display library.
